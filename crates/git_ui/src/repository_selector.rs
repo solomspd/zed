@@ -1,12 +1,12 @@
 use crate::git_status_icon;
 use git::status::{FileStatus, StatusCode, TrackedStatus, UnmergedStatus, UnmergedStatusCode};
-use gpui::{App, DismissEvent, Entity, EventEmitter, FocusHandle, Focusable, Task, WeakEntity};
+use gpui::{Action, App, DismissEvent, Entity, EventEmitter, FocusHandle, Focusable, Task, WeakEntity};
 use itertools::Itertools;
 use picker::{Picker, PickerDelegate, PickerEditorPosition};
 use project::{Project, git_store::Repository};
 use std::sync::Arc;
 use ui::{ListItem, ListItemSpacing, prelude::*};
-use workspace::{ModalView, Workspace};
+use workspace::{ModalView, OpenTerminal, Workspace};
 
 pub fn register(workspace: &mut Workspace) {
     workspace.register_action(open);
@@ -268,6 +268,9 @@ impl PickerDelegate for RepositorySelectorDelegate {
             .as_ref()
             .is_some_and(|active| active == repo_info);
 
+        let work_dir = repo.work_directory_abs_path.clone();
+        let repository_selector = self.repository_selector.clone();
+
         let mut item = ListItem::new(ix)
             .inset(true)
             .spacing(ListItemSpacing::Sparse)
@@ -283,7 +286,24 @@ impl PickerDelegate for RepositorySelectorDelegate {
                                 .color(Color::Accent),
                         )
                     }),
-            );
+            )
+            .on_aux_click(move |event, window, cx| {
+                if !event.is_middle_click() {
+                    return;
+                }
+                cx.stop_propagation();
+                repository_selector
+                    .update(cx, |_, cx| cx.emit(DismissEvent))
+                    .ok();
+                window.dispatch_action(
+                    OpenTerminal {
+                        working_directory: work_dir.to_path_buf(),
+                        local: false,
+                    }
+                    .boxed_clone(),
+                    cx,
+                );
+            });
 
         if summary.count > 0 {
             let status = if summary.conflict > 0 {

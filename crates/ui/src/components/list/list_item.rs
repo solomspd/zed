@@ -40,6 +40,7 @@ pub struct ListItem {
     toggle: Option<bool>,
     inset: bool,
     on_click: Option<Box<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>>,
+    on_aux_click: Option<Box<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>>,
     on_hover: Option<Box<dyn Fn(&bool, &mut Window, &mut App) + 'static>>,
     on_toggle: Option<Arc<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>>,
     tooltip: Option<Box<dyn Fn(&mut Window, &mut App) -> AnyView + 'static>>,
@@ -71,6 +72,7 @@ impl ListItem {
             toggle: None,
             inset: false,
             on_click: None,
+            on_aux_click: None,
             on_secondary_mouse_down: None,
             on_toggle: None,
             on_hover: None,
@@ -112,6 +114,14 @@ impl ListItem {
         handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
     ) -> Self {
         self.on_click = Some(Box::new(handler));
+        self
+    }
+
+    pub fn on_aux_click(
+        mut self,
+        handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
+    ) -> Self {
+        self.on_aux_click = Some(Box::new(handler));
         self
     }
 
@@ -267,6 +277,10 @@ impl RenderOnce for ListItem {
             })
             .when(self.rounded, |this| this.rounded_sm())
             .when_some(self.on_hover, |this, on_hover| this.on_hover(on_hover))
+            .when_some(
+                self.on_aux_click.filter(|_| !self.disabled),
+                |this, on_aux_click| this.on_aux_click(on_aux_click),
+            )
             .child(
                 h_flex()
                     .id("inner_list_item")

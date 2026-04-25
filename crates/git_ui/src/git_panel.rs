@@ -6324,6 +6324,7 @@ impl RenderOnce for PanelRepoFooter {
                         OpenTerminal {
                             working_directory: work_dir.to_path_buf(),
                             local: false,
+                            focus: false,
                         }
                         .boxed_clone(),
                         cx,

@@ -2022,6 +2022,7 @@ impl OutlinePanel {
                 workspace::OpenTerminal {
                     working_directory,
                     local: false,
+                    focus: true,
                 }
                 .boxed_clone(),
                 cx,

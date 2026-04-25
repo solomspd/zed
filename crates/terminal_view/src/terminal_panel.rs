@@ -527,14 +527,20 @@ impl TerminalPanel {
             return;
         };
 
+        let reveal_strategy = if action.focus {
+            RevealStrategy::Always
+        } else {
+            RevealStrategy::NoFocus
+        };
+
         terminal_panel
             .update(cx, |panel, cx| {
                 if action.local {
-                    panel.add_local_terminal_shell(RevealStrategy::Always, window, cx)
+                    panel.add_local_terminal_shell(reveal_strategy, window, cx)
                 } else {
                     panel.add_terminal_shell(
                         Some(action.working_directory.clone()),
-                        RevealStrategy::Always,
+                        reveal_strategy,
                         window,
                         cx,
                     )

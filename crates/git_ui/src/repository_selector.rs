@@ -269,7 +269,6 @@ impl PickerDelegate for RepositorySelectorDelegate {
             .is_some_and(|active| active == repo_info);
 
         let work_dir = repo.work_directory_abs_path.clone();
-        let repository_selector = self.repository_selector.clone();
 
         let mut item = ListItem::new(ix)
             .inset(true)
@@ -292,13 +291,11 @@ impl PickerDelegate for RepositorySelectorDelegate {
                     return;
                 }
                 cx.stop_propagation();
-                repository_selector
-                    .update(cx, |_, cx| cx.emit(DismissEvent))
-                    .ok();
                 window.dispatch_action(
                     OpenTerminal {
                         working_directory: work_dir.to_path_buf(),
                         local: false,
+                        focus: false,
                     }
                     .boxed_clone(),
                     cx,

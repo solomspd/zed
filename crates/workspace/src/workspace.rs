@@ -614,7 +614,7 @@ impl PartialEq for Toast {
 }
 
 /// Opens a new terminal with the specified working directory.
-#[derive(Debug, Default, Clone, Deserialize, PartialEq, JsonSchema, Action)]
+#[derive(Debug, Clone, Deserialize, PartialEq, JsonSchema, Action)]
 #[action(namespace = workspace)]
 #[serde(deny_unknown_fields)]
 pub struct OpenTerminal {
@@ -622,6 +622,19 @@ pub struct OpenTerminal {
     /// If true, creates a local terminal even in remote projects.
     #[serde(default)]
     pub local: bool,
+    /// If true (default), focuses the terminal after opening it.
+    #[serde(default = "default_true")]
+    pub focus: bool,
+}
+
+impl Default for OpenTerminal {
+    fn default() -> Self {
+        Self {
+            working_directory: PathBuf::default(),
+            local: false,
+            focus: true,
+        }
+    }
 }
 
 #[derive(
